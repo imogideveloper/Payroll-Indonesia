@@ -371,6 +371,28 @@ class CustomSalarySlip(SalarySlip):
         except Exception as e:
             logger.warning(f"Failed to update rounded values for {self.name}: {e}")
 
+    def populate_employer_contributions(self):
+        EMPLOYER_COMPONENTS = [
+            "BPJS Kesehatan Employer",
+            "BPJS JHT Employer",
+            "BPJS JP Employer",
+            "BPJS JKK Employer",
+            "BPJS JKM Employer",
+        ]
+        self.set("employer_contributions", [])
+        new_deductions = []
+        for d in self.deductions:
+            sc = d.get("salary_component") if isinstance(d, dict) else getattr(d, "salary_component", None)
+            amount = d.get("amount") if isinstance(d, dict) else getattr(d, "amount", 0)
+            if sc in EMPLOYER_COMPONENTS:
+                self.append("employer_contributions", {
+                    "salary_component": sc,
+                    "amount": amount
+                })
+            else:
+                new_deductions.append(d)
+        self.set("deductions", new_deductions)
+
     # -------------------------
     # Hook validate & sync history
     # -------------------------
@@ -385,6 +407,8 @@ class CustomSalarySlip(SalarySlip):
                     message=f"Error in parent validate for Salary Slip {self.name}: {e}\n{traceback.format_exc()}",
                     title="Payroll Indonesia Validation Error",
                 )
+            
+            self.populate_employer_contributions()
 
             if getattr(self, "tax_type", "") == "DECEMBER":
                 tax_amount = self.calculate_income_tax_december()

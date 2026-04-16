@@ -261,5 +261,13 @@ fixtures = [
                 ]
             ]
         ]
+    },
+    "Employer Contribution Detail",
+    {
+        "doctype": "Custom Field",
+        "filters": [
+            ["dt", "=", "Salary Slip"],
+            ["fieldname", "=", "employer_contributions"]
+        ]
     }
 ]

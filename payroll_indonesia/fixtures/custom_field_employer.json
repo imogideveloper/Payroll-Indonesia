@@ -1,0 +1,12 @@
+[
+ {
+  "doctype": "Custom Field",
+  "name": "Salary Slip-employer_contributions",
+  "dt": "Salary Slip",
+  "fieldname": "employer_contributions",
+  "fieldtype": "Table",
+  "label": "Employer Contributions",
+  "options": "Employer Contribution Detail",
+  "insert_after": "deductions"
+ }
+]
