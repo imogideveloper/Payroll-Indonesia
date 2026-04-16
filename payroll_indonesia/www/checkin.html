@@ -1,0 +1,447 @@
+---
+title: Absensi
+no_cache: 1
+---
+<style>
+  /* ── OVERRIDE ERPNext WEB PAGE LAYOUT ── */
+  .navbar, .navbar-main, nav.navbar { display: none !important; }
+  footer, .web-footer, .footer { display: none !important; }
+  body { padding-top: 0 !important; }
+  section.top-section, .page-content-wrapper { padding: 0 !important; margin: 0 !important; }
+  .container { max-width: 100% !important; padding: 0 !important; margin: 0 !important; width: 100% !important; }
+  .page-content { padding: 0 !important; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #EEF2F7;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    width: 100%;
+    background: linear-gradient(150deg, #1D6FBF 0%, #0F4A9C 100%);
+    padding: 52px 24px 80px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -50px; right: -50px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+    pointer-events: none;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -70px; left: -30px;
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    pointer-events: none;
+  }
+  .avatar {
+    width: 76px; height: 76px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+    border: 2px solid rgba(255,255,255,0.45);
+    margin: 0 auto 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; font-weight: 700;
+    color: white; letter-spacing: 1px;
+    position: relative; z-index: 1;
+  }
+  .emp-name {
+    font-size: 18px; font-weight: 600; color: white;
+    position: relative; z-index: 1;
+  }
+  .emp-dept {
+    font-size: 13px; color: rgba(255,255,255,0.6);
+    margin-top: 5px;
+    position: relative; z-index: 1;
+  }
+
+  /* ── BODY ── */
+  .body {
+    width: 100%; max-width: 420px;
+    padding: 0 16px 40px;
+    margin-top: -44px;
+    display: flex; flex-direction: column; gap: 12px;
+    position: relative; z-index: 2;
+  }
+
+  /* ── CLOCK CARD ── */
+  .clock-card {
+    background: white;
+    border-radius: 20px;
+    padding: 24px 20px 20px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.09);
+    text-align: center;
+  }
+  .time-big {
+    font-size: 54px; font-weight: 200;
+    color: #0D1B2A;
+    letter-spacing: -3px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .date-text { font-size: 13px; color: #94A3B8; margin-top: 8px; }
+
+  /* ── STATUS CARD ── */
+  .status-card {
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex; align-items: center; gap: 14px;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .status-card.idle { background: #F8FAFC; border: 1.5px solid #E2E8F0; }
+  .status-card.in   { background: #F0FDF4; border: 1.5px solid #BBF7D0; }
+  .status-card.out  { background: #FFF5F5; border: 1.5px solid #FED7D7; }
+
+  .status-icon {
+    width: 44px; height: 44px;
+    border-radius: 13px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .status-icon.idle { background: #F1F5F9; }
+  .status-icon.in   { background: #DCFCE7; }
+  .status-icon.out  { background: #FEE2E2; }
+
+  .status-label {
+    font-size: 14px; font-weight: 600;
+  }
+  .status-label.idle { color: #475569; }
+  .status-label.in   { color: #166534; }
+  .status-label.out  { color: #991B1B; }
+
+  .status-sub {
+    font-size: 12px; margin-top: 3px;
+  }
+  .status-sub.idle { color: #94A3B8; }
+  .status-sub.in   { color: #16A34A; }
+  .status-sub.out  { color: #DC2626; }
+
+  /* ── BUTTON ── */
+  .btn {
+    width: 100%; padding: 18px;
+    border-radius: 16px; border: none;
+    font-size: 16px; font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.2s, opacity 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .btn:active { transform: scale(0.982); }
+  .btn.checkin {
+    background: linear-gradient(135deg, #1D6FBF, #0F4A9C);
+    color: white;
+    box-shadow: 0 6px 20px rgba(15,74,156,0.38);
+  }
+  .btn.checkout {
+    background: white;
+    color: #DC2626;
+    border: 1.5px solid #FCA5A5;
+    box-shadow: 0 4px 14px rgba(220,38,38,0.1);
+  }
+  .btn.loading {
+    opacity: 0.55;
+    pointer-events: none;
+    transform: none !important;
+  }
+
+  /* ── HISTORY CARD ── */
+  .history-card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  }
+  .history-card .htitle {
+    font-size: 11px; color: #94A3B8;
+    font-weight: 600; margin-bottom: 14px;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .hist-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 11px 0;
+  }
+  .hist-row + .hist-row { border-top: 1px solid #F8FAFC; }
+  .hist-left { display: flex; align-items: center; gap: 12px; }
+  .hist-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%; flex-shrink: 0;
+  }
+  .hist-dot.in  { background: #22C55E; }
+  .hist-dot.out { background: #F87171; }
+  .hist-type { font-size: 13px; color: #334155; font-weight: 500; }
+  .hist-right { display: flex; align-items: center; gap: 8px; }
+  .hist-time { font-size: 13px; font-weight: 600; color: #1E40AF; }
+  .badge {
+    font-size: 10px; padding: 3px 9px;
+    border-radius: 999px; font-weight: 600; letter-spacing: 0.4px;
+  }
+  .badge.in  { background: #DCFCE7; color: #166534; }
+  .badge.out { background: #FEE2E2; color: #991B1B; }
+  .empty {
+    font-size: 13px; color: #CBD5E1;
+    text-align: center; padding: 16px 0;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: #0F172A; color: white;
+    padding: 12px 22px; border-radius: 12px;
+    font-size: 13px; font-weight: 500;
+    opacity: 0; transition: opacity 0.25s, transform 0.25s;
+    white-space: nowrap; z-index: 999;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.28);
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+
+<div class="header">
+  <div class="avatar" id="avatar">?</div>
+  <div class="emp-name" id="emp-name">Memuat...</div>
+  <div class="emp-dept" id="emp-dept"></div>
+</div>
+
+<div class="body">
+
+  <div class="clock-card">
+    <div class="time-big" id="clock">--:--:--</div>
+    <div class="date-text" id="date-text"></div>
+  </div>
+
+  <div class="status-card idle" id="status-card">
+    <div class="status-icon idle" id="status-icon">🕐</div>
+    <div>
+      <div class="status-label idle" id="status-label">Belum check-in hari ini</div>
+      <div class="status-sub idle" id="status-sub">Tap tombol di bawah untuk check-in</div>
+    </div>
+  </div>
+
+  <button class="btn checkin" id="main-btn" onclick="doCheckin()">Check In</button>
+
+  <div class="history-card">
+    <div class="htitle">Riwayat Hari Ini</div>
+    <div id="hist-list"><div class="empty">Belum ada aktivitas</div></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="app-meta"
+  data-user={{ frappe.session.user | tojson }}
+  data-csrf={{ csrf_token | tojson }}
+  style="display:none"></div>
+
+<script>
+  var appMeta      = document.getElementById('app-meta');
+  var SITE_URL     = window.location.origin;
+  var SESSION_USER = appMeta.dataset.user;
+  var CSRF_TOKEN   = appMeta.dataset.csrf;
+  var employeeId   = null;
+  var logs = [];
+
+  // Redirect jika belum login
+  if(!SESSION_USER || SESSION_USER === 'Guest') {
+    window.location.href = '/login?redirect-to=/checkin';
+  }
+
+  var DAYS   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  var MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli',
+                'Agustus','September','Oktober','November','Desember'];
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+
+  function updateClock(){
+    var now = new Date();
+    document.getElementById('clock').textContent =
+      pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+    document.getElementById('date-text').textContent =
+      DAYS[now.getDay()]+', '+now.getDate()+' '+MONTHS[now.getMonth()]+' '+now.getFullYear();
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  function showToast(msg, duration){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, duration || 2500);
+  }
+
+  function getInitials(name){
+    if(!name) return '?';
+    var parts = name.trim().split(' ');
+    if(parts.length >= 2) return (parts[0][0]+parts[1][0]).toUpperCase();
+    return parts[0].substring(0,2).toUpperCase();
+  }
+
+  function loadEmployee(){
+    var url = SITE_URL + '/api/method/frappe.client.get_list'
+      + '?doctype=Employee'
+      + '&filters=' + encodeURIComponent('[["user_id","=","' + SESSION_USER + '"]]')
+      + '&fields=' + encodeURIComponent('["name","employee_name","department","designation"]')
+      + '&limit=1';
+    fetch(url)
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if(data.message && data.message.length > 0){
+          var emp = data.message[0];
+          employeeId = emp.name;
+          document.getElementById('emp-name').textContent = emp.employee_name || SESSION_USER;
+          document.getElementById('emp-dept').textContent = emp.department || emp.designation || '';
+          document.getElementById('avatar').textContent   = getInitials(emp.employee_name);
+          loadTodayLogs();
+        } else {
+          document.getElementById('emp-name').textContent = SESSION_USER;
+          document.getElementById('emp-dept').textContent = 'Employee belum terhubung ke akun ini';
+          showToast('Employee tidak ditemukan', 4000);
+        }
+      })
+      .catch(function(){
+        document.getElementById('emp-name').textContent = SESSION_USER;
+      });
+  }
+
+  function loadTodayLogs(){
+    var today   = new Date();
+    var dateStr = today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());
+    var startDt = dateStr + ' 00:00:00';
+    var endDt   = dateStr + ' 23:59:59';
+    fetch(SITE_URL + '/api/method/frappe.client.get_list', {
+      method: 'POST',
+      headers: {
+        'Content-Type':        'application/x-www-form-urlencoded',
+        'X-Frappe-CSRF-Token': CSRF_TOKEN
+      },
+      body: new URLSearchParams({
+        doctype:  'Employee Checkin',
+        filters:  JSON.stringify([["employee","=",employeeId],["time",">=",startDt],["time","<=",endDt]]),
+        fields:   JSON.stringify(["name","log_type","time"]),
+        order_by: 'time asc',
+        limit:    '50'
+      })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(data.message){
+        logs = data.message.map(function(l){
+          return { type: l.log_type, time: l.time ? l.time.substring(11,16) : '' };
+        });
+        renderHistory();
+        updateStatus();
+      }
+    })
+    .catch(function(){ /* gagal silent, biarkan "Belum ada aktivitas" */ });
+  }
+
+  function updateStatus(){
+    var last = logs.length ? logs[logs.length-1] : null;
+    var card  = document.getElementById('status-card');
+    var icon  = document.getElementById('status-icon');
+    var lbl   = document.getElementById('status-label');
+    var sub   = document.getElementById('status-sub');
+    var btn   = document.getElementById('main-btn');
+
+    if(!last){
+      card.className = 'status-card idle';
+      icon.className = 'status-icon idle'; icon.textContent = '🕐';
+      lbl.className  = 'status-label idle'; lbl.textContent = 'Belum check-in hari ini';
+      sub.className  = 'status-sub idle';   sub.textContent = 'Tap tombol di bawah untuk check-in';
+      btn.className  = 'btn checkin'; btn.textContent = 'Check In';
+    } else if(last.type === 'IN'){
+      card.className = 'status-card in';
+      icon.className = 'status-icon in'; icon.textContent = '✅';
+      lbl.className  = 'status-label in'; lbl.textContent = 'Sedang check-in';
+      sub.className  = 'status-sub in';   sub.textContent = 'Check-in pukul ' + last.time;
+      btn.className  = 'btn checkout'; btn.textContent = 'Check Out';
+    } else {
+      card.className = 'status-card out';
+      icon.className = 'status-icon out'; icon.textContent = '🏁';
+      lbl.className  = 'status-label out'; lbl.textContent = 'Sudah check-out';
+      sub.className  = 'status-sub out';   sub.textContent = 'Check-out pukul ' + last.time;
+      btn.className  = 'btn checkin'; btn.textContent = 'Check In Lagi';
+    }
+  }
+
+  function renderHistory(){
+    var el = document.getElementById('hist-list');
+    if(!logs.length){
+      el.innerHTML = '<div class="empty">Belum ada aktivitas</div>';
+      return;
+    }
+    el.innerHTML = logs.map(function(l){
+      var isIn = l.type === 'IN';
+      return '<div class="hist-row">'
+        +'<div class="hist-left">'
+        +'<div class="hist-dot '+(isIn?'in':'out')+'"></div>'
+        +'<span class="hist-type">'+(isIn?'Check In':'Check Out')+'</span>'
+        +'</div>'
+        +'<div class="hist-right">'
+        +'<span class="hist-time">'+l.time+'</span>'
+        +'<span class="badge '+(isIn?'in':'out')+'">'+l.type+'</span>'
+        +'</div></div>';
+    }).join('');
+  }
+
+  function doCheckin(){
+    if(!employeeId){ showToast('Employee tidak ditemukan!'); return; }
+    var btn     = document.getElementById('main-btn');
+    var last    = logs.length ? logs[logs.length-1] : null;
+    var logType = (!last || last.type === 'OUT') ? 'IN' : 'OUT';
+    var now     = new Date();
+    var timeStr = now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+' '
+                 +pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+
+    btn.classList.add('loading');
+    btn.textContent = 'Menyimpan...';
+
+    fetch(SITE_URL + '/api/resource/Employee%20Checkin', {
+      method:  'POST',
+      headers: {
+        'Content-Type':        'application/json',
+        'X-Frappe-CSRF-Token': CSRF_TOKEN
+      },
+      body: JSON.stringify({ employee: employeeId, log_type: logType, time: timeStr })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      btn.classList.remove('loading');
+      if(data.data || data.message){
+        logs.push({ type: logType, time: pad(now.getHours())+':'+pad(now.getMinutes()) });
+        renderHistory();
+        updateStatus();
+        showToast(logType === 'IN' ? '✓ Check-in berhasil!' : '✓ Check-out berhasil!');
+      } else {
+        updateStatus();
+        showToast('Gagal menyimpan. Coba lagi.');
+      }
+    })
+    .catch(function(){
+      btn.classList.remove('loading');
+      updateStatus();
+      showToast('Koneksi gagal. Coba lagi.');
+    });
+  }
+
+  // Langsung load setelah DOM siap, session sudah di-embed server-side
+  document.addEventListener('DOMContentLoaded', function(){
+    loadEmployee();
+  });
+</script>
