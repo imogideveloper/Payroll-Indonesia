@@ -55,7 +55,7 @@
 {%- endif -%}
 
 <style>
-@page { size: A5 landscape; margin: 6mm; }
+@page { size: A5 landscape; margin: 5mm; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 .wrap {
@@ -66,42 +66,39 @@
 }
 
 /* HEADER */
-.hdr { background: #1b3f7e; color: #fff; padding: 8px 14px; width: 100%; overflow: hidden; }
+.hdr { background: #1b3f7e; color: #fff; padding: 7px 12px; overflow: hidden; }
 .hdr-l { float: left; }
 .hdr-r { float: right; text-align: right; }
-.co-name { font-size: 12pt; font-weight: bold; line-height: 1.1; }
-.co-sub  { font-size: 5.5pt; color: rgba(255,255,255,.5); margin-top: 1px; }
-.per-lbl { font-size: 5.5pt; color: rgba(255,255,255,.5); }
-.per-mon { font-size: 12pt; font-weight: bold; margin-top: 2px; }
+.co-name { font-size: 11pt; font-weight: bold; line-height: 1.1; }
+.co-sub  { font-size: 5pt; color: rgba(255,255,255,.5); margin-top: 1px; }
+.per-lbl { font-size: 5pt; color: rgba(255,255,255,.5); }
+.per-mon { font-size: 11pt; font-weight: bold; margin-top: 1px; }
 
 /* EMP BAR */
-.emp { background: #1e4a99; color: #fff; padding: 5px 14px; width: 100%; overflow: hidden; }
-.ef  { float: left; padding-right: 18px; }
+.emp { background: #1e4a99; color: #fff; padding: 5px 12px; overflow: hidden; }
+.ef  { float: left; padding-right: 16px; }
 .ef:last-child { padding-right: 0; }
-.el  { font-size: 5pt; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: .3px; }
-.ev  { font-size: 7pt; font-weight: bold; margin-top: 1px; }
+.el  { font-size: 4.5pt; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: .3px; }
+.ev  { font-size: 6.5pt; font-weight: bold; margin-top: 1px; }
 
-/* BODY — pakai table agar 3 kolom sejajar dan tidak overflow */
-.body { background: #edf0f7; padding: 6px; width: 100%; }
+/* BODY */
+.body { background: #edf0f7; padding: 5px 5px 0 5px; width: 100%; }
 .body-table { width: 100%; border-collapse: separate; border-spacing: 5px 0; table-layout: fixed; }
-.body-table td { background: #fff; padding: 8px 9px; vertical-align: top; width: 33.33%; }
+.col-earn  { background: #fff; padding: 7px 9px; vertical-align: top; width: 42%; }
+.col-right { background: #fff; padding: 7px 9px; vertical-align: top; width: 58%; }
 
 .col-title {
   font-size: 5.5pt; font-weight: bold; letter-spacing: .9px;
   text-transform: uppercase; color: #1b3f7e;
-  border-left: 3px solid #1b3f7e; padding-left: 5px; margin-bottom: 7px;
+  border-left: 3px solid #1b3f7e; padding-left: 5px; margin-bottom: 6px;
 }
-.grp {
-  font-size: 5pt; font-weight: bold; text-transform: uppercase;
-  letter-spacing: .3px; color: #aaa; padding: 5px 0 3px;
-}
+.section-divider { border: none; border-top: 2px solid #edf0f7; margin: 7px 0; }
+
+.grp { font-size: 4.5pt; font-weight: bold; text-transform: uppercase; letter-spacing: .3px; color: #aaa; padding: 4px 0 2px; }
 .grp.first { padding-top: 0; }
 
 .items { width: 100%; border-collapse: collapse; }
-.items td {
-  font-size: 6.5pt; padding: 2px 0;
-  border-bottom: 1px solid #f3f3f3; vertical-align: middle; line-height: 1.3;
-}
+.items td { font-size: 6.5pt; padding: 2px 0; border-bottom: 1px solid #f3f3f3; vertical-align: middle; line-height: 1.3; }
 .items tr:last-child td { border-bottom: none; }
 .r   { text-align: right; white-space: nowrap; }
 .neg { text-align: right; white-space: nowrap; color: #c0392b; }
@@ -110,18 +107,30 @@
 .sl { float: left;  font-size: 6.5pt; font-weight: bold; color: #1b3f7e; }
 .sr { float: right; font-size: 6.5pt; font-weight: bold; color: #1b3f7e; white-space: nowrap; }
 
-/* FOOTER */
-.ftr { background: #1b3f7e; color: #fff; padding: 8px 14px; width: 100%; overflow: hidden; }
-.ftr-l { float: left; padding-top: 4px; }
-.ftr-r { float: right; }
-.thp-lbl { font-size: 5.5pt; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: .7px; }
-.thp-amt { font-size: 15pt; font-weight: bold; }
+/* SUMMARY BAR — di bawah tabel */
+.summary {
+  background: #fff;
+  margin: 5px 0 0 0;
+  padding: 7px 12px;
+  overflow: hidden;
+  border-top: 3px solid #edf0f7;
+}
+.summary-table { width: 100%; border-collapse: collapse; }
+.summary-table td { padding: 0 8px; vertical-align: middle; }
+.summary-table td:first-child { padding-left: 0; }
+.summary-table td:last-child  { padding-right: 0; text-align: right; }
+.sum-lbl { font-size: 5.5pt; color: #999; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 2px; }
+.sum-val { font-size: 9pt; font-weight: bold; color: #1b3f7e; }
+.sum-val.neg { color: #c0392b; }
+.sum-eq  { font-size: 12pt; color: #ccc; font-weight: bold; padding: 0 4px; }
+.sum-net { font-size: 10pt; font-weight: bold; color: #1b3f7e; }
 .badge {
   display: inline-block; background: #27ae60; color: #fff;
   font-size: 5.5pt; font-weight: bold; padding: 2px 7px;
   border-radius: 7px; margin-left: 6px; vertical-align: middle;
 }
-.note { background: #edf0f7; text-align: center; font-size: 5pt; color: #bbb; padding: 3px 14px; }
+
+.note { background: #edf0f7; text-align: center; font-size: 5pt; color: #bbb; padding: 3px 12px; }
 </style>
 
 <div class="wrap">
@@ -154,12 +163,12 @@
     </div>
   </div>
 
-  <!-- BODY: 3 KOLOM SEJAJAR -->
+  <!-- BODY: 2 KOLOM -->
   <div class="body">
     <table class="body-table"><tbody><tr>
 
-      <!-- COL 1: EARNINGS -->
-      <td>
+      <!-- KIRI: EARNINGS -->
+      <td class="col-earn">
         <div class="col-title">Earnings</div>
         <table class="items"><tbody>
           {%- if normal_earn -%}
@@ -179,8 +188,8 @@
         </div>
       </td>
 
-      <!-- COL 2: DEDUCTIONS -->
-      <td>
+      <!-- KANAN: DEDUCTIONS + EMPLOYER (stacked) -->
+      <td class="col-right">
         <div class="col-title">Deductions</div>
         {%- if statutory_ded -%}
           <div class="grp first">Statutory &mdash; Employee</div>
@@ -204,17 +213,14 @@
             {%- endfor -%}
           </tbody></table>
         {%- endif -%}
-        {%- if not statutory_ded and not other_ded -%}
-          <div style="color:#ccc;">—</div>
-        {%- endif -%}
+        {%- if not statutory_ded and not other_ded -%}<div style="color:#ccc;">—</div>{%- endif -%}
         <div class="subtotal">
           <span class="sl">Total Deductions</span>
           <span class="sr">&ndash; {{ frappe.format(doc.total_deduction, {'fieldtype':'Currency'}) }}</span>
         </div>
-      </td>
 
-      <!-- COL 3: EMPLOYER CONTRIBUTION -->
-      <td>
+        <hr class="section-divider">
+
         <div class="col-title">Employer Contribution</div>
         {%- if employer_list -%}
           <table class="items"><tbody>
@@ -235,15 +241,27 @@
       </td>
 
     </tr></tbody></table>
-  </div>
 
-  <!-- FOOTER -->
-  <div class="ftr">
-    <div class="ftr-l"><div class="thp-lbl">Net Take-Home Pay</div></div>
-    <div class="ftr-r">
-      <span class="thp-amt">{{ frappe.format(doc.net_pay, {'fieldtype':'Currency'}) }}</span>
-      <span class="badge">Paid</span>
+    <!-- SUMMARY BAR -->
+    <div class="summary">
+      <table class="summary-table"><tbody><tr>
+        <td>
+          <div class="sum-lbl">Total Earnings</div>
+          <div class="sum-val">{{ frappe.format(ns.earn_total, {'fieldtype':'Currency'}) }}</div>
+        </td>
+        <td style="width:20px; text-align:center;"><span class="sum-eq">&minus;</span></td>
+        <td>
+          <div class="sum-lbl">Total Deductions</div>
+          <div class="sum-val neg">{{ frappe.format(doc.total_deduction, {'fieldtype':'Currency'}) }}</div>
+        </td>
+        <td style="width:20px; text-align:center;"><span class="sum-eq">=</span></td>
+        <td>
+          <div class="sum-lbl">Net Take-Home Pay</div>
+          <div class="sum-net">{{ frappe.format(doc.net_pay, {'fieldtype':'Currency'}) }} <span class="badge">Paid</span></div>
+        </td>
+      </tr></tbody></table>
     </div>
+
   </div>
 
   <div class="note">Generated automatically &middot; Computer-generated document, valid without signature.</div>
