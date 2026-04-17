@@ -81,7 +81,8 @@ doctype_js = {
 # Running both hooks would call the setup twice, so we only use
 # `after_migrate`.
 after_migrate = [
-    "payroll_indonesia.setup.setup_module.after_sync"
+    "payroll_indonesia.setup.setup_module.after_sync",
+    "payroll_indonesia.setup.install.after_migrate"
 ]
 
 # Desk Notifications
@@ -131,6 +132,9 @@ doc_events = {
         "on_submit": "payroll_indonesia.override.salary_slip.on_submit",
         "on_cancel": "payroll_indonesia.override.salary_slip.on_cancel",
     },
+    "Employee Checkin": {
+        "after_insert": "payroll_indonesia.attendance.auto_attendance.auto_create_from_checkin"
+    },
 }
 
 # Scheduled Tasks
@@ -153,6 +157,12 @@ doc_events = {
 #		"payroll_indonesia.tasks.monthly"
 #	],
 # }
+
+scheduler_events = {
+    "daily": [
+        "payroll_indonesia.attendance.daily_attendance.process_yesterday_attendance"
+    ]
+}
 
 # Testing
 # -------
@@ -228,7 +238,10 @@ doc_events = {
 # Fixtures are data that should be auto-imported when the app is installed
 fixtures = [
     "Custom Field",
-    "Salary Component",
+    {
+        "doctype": "Salary Component",
+        "validate": "payroll_indonesia.override.salary_component.validate"
+    },
     "Income Tax Slab",
     "PTKP Table",
     "TER Bracket Table",
@@ -271,3 +284,5 @@ fixtures = [
         ]
     }
 ]
+
+after_install = "payroll_indonesia.setup.install.after_install"

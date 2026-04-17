@@ -6,24 +6,38 @@
   {%- set sd_parts = sd[:10].split("-") -%}
   {%- set ed_parts = ed[:10].split("-") -%}
   {%- set period_month = month_names[sd_parts[1]|int - 1] + " " + sd_parts[0] -%}
-  {%- set period_range = "Period " + sd_parts[2] + " " + month_names[sd_parts[1]|int - 1][:3] + " \u2013 " + ed_parts[2] + " " + month_names[ed_parts[1]|int - 1][:3] + " " + ed_parts[0] -%}
+  {%- set period_range = sd_parts[2] + "–" + ed_parts[2] + " " + month_names[ed_parts[1]|int - 1][:3] + " " + ed_parts[0] -%}
 {%- else -%}
   {%- set period_month = "" -%}
   {%- set period_range = "" -%}
 {%- endif -%}
 
-{# Split deductions into statutory / other / employer #}
-{%- set statutory_ded  = [] -%}
-{%- set other_ded      = [] -%}
-{%- set employer_list  = [] -%}
+{%- set normal_earn   = [] -%}
+{%- set employer_list = [] -%}
+{%- set statutory_ded = [] -%}
+{%- set other_ded     = [] -%}
+{%- set ns = namespace(earn_total=0, emp_total=0) -%}
+
+{%- for row in doc.earnings -%}
+  {%- if row.statistical_component -%}
+  {%- elif "employer" in (row.salary_component | lower) -%}
+    {%- set _ = employer_list.append(row) -%}
+    {%- set ns.emp_total = ns.emp_total + row.amount -%}
+  {%- elif not row.do_not_include_in_total -%}
+    {%- set _ = normal_earn.append(row) -%}
+    {%- set ns.earn_total = ns.earn_total + row.amount -%}
+  {%- endif -%}
+{%- endfor -%}
+
 {%- for row in doc.deductions -%}
   {%- if row.statistical_component -%}
-    {# skip #}
+  {%- elif "contra" in (row.salary_component | lower) -%}
+  {%- elif "employer" in (row.salary_component | lower) -%}
+    {%- set _ = employer_list.append(row) -%}
+    {%- set ns.emp_total = ns.emp_total + row.amount -%}
   {%- else -%}
-    {%- set cu = row.salary_component | upper -%}
-    {%- if "EMPLOYER" in cu or row.do_not_include_in_total -%}
-      {%- set _ = employer_list.append(row) -%}
-    {%- elif "BPJS" in cu or "PPH" in cu or "TAX" in cu -%}
+    {%- set cl = row.salary_component | lower -%}
+    {%- if "bpjs" in cl or "pph" in cl or "tax" in cl -%}
       {%- set _ = statutory_ded.append(row) -%}
     {%- else -%}
       {%- set _ = other_ded.append(row) -%}
@@ -31,277 +45,207 @@
   {%- endif -%}
 {%- endfor -%}
 
-{# Also pick employer components from earnings (statistical or do_not_include_in_total) #}
-{%- for row in doc.earnings -%}
-  {%- set cu = row.salary_component | upper -%}
-  {%- if "EMPLOYER" in cu or row.do_not_include_in_total or row.statistical_component -%}
-    {%- set _ = employer_list.append(row) -%}
-  {%- endif -%}
-{%- endfor -%}
-
-{%- set ns = namespace(emp_total=0) -%}
-{%- for row in employer_list -%}{%- set ns.emp_total = ns.emp_total + row.amount -%}{%- endfor -%}
+{%- if doc.employer_contributions -%}
+  {%- for row in doc.employer_contributions -%}
+    {%- if row.salary_component and row.amount -%}
+      {%- set _ = employer_list.append(row) -%}
+      {%- set ns.emp_total = ns.emp_total + row.amount -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
 
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  .ps-wrap {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 9pt;
-    color: #333;
-    width: 100%;
-  }
+@page { size: A5 landscape; margin: 6mm; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ── HEADER ───────────────────────────────────────── */
-  .ps-header {
-    background-color: #1b3f77;
-    color: #fff;
-    padding: 16px 22px;
-  }
-  .ps-header table { width: 100%; border-collapse: collapse; }
-  .ps-header td    { vertical-align: top; padding: 0; }
-  .ps-co-name { font-size: 16pt; font-weight: bold; }
-  .ps-co-sub  { font-size: 7.5pt; color: rgba(255,255,255,.6); margin-top: 3px; }
-  .ps-period-lbl   { font-size: 7.5pt; color: rgba(255,255,255,.6); text-align: right; }
-  .ps-period-month { font-size: 14pt; font-weight: bold; text-align: right; margin-top: 4px; }
+.wrap {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 6.5pt;
+  color: #1a1a1a;
+  width: 100%;
+}
 
-  /* ── EMP BAR ──────────────────────────────────────── */
-  .ps-emp-bar {
-    background-color: #224799;
-    color: #fff;
-    padding: 11px 22px;
-  }
-  .ps-emp-bar table { width: 100%; border-collapse: collapse; }
-  .ps-emp-bar td    { vertical-align: top; padding: 0 14px 0 0; }
-  .ps-emp-bar td:last-child { padding-right: 0; }
-  .ef-lbl { font-size: 6.5pt; color: rgba(255,255,255,.55); text-transform: uppercase; letter-spacing: .3px; }
-  .ef-val { font-size: 9pt; font-weight: bold; margin-top: 2px; }
+/* HEADER */
+.hdr { background: #1b3f7e; color: #fff; padding: 8px 14px; width: 100%; overflow: hidden; }
+.hdr-l { float: left; }
+.hdr-r { float: right; text-align: right; }
+.co-name { font-size: 12pt; font-weight: bold; line-height: 1.1; }
+.co-sub  { font-size: 5.5pt; color: rgba(255,255,255,.5); margin-top: 1px; }
+.per-lbl { font-size: 5.5pt; color: rgba(255,255,255,.5); }
+.per-mon { font-size: 12pt; font-weight: bold; margin-top: 2px; }
 
-  /* ── BODY ─────────────────────────────────────────── */
-  .ps-body { background-color: #eef1f6; padding: 14px 22px; }
-  .ps-body > table { width: 100%; border-collapse: separate; border-spacing: 10px 0; }
-  .ps-body > table > tbody > tr > td {
-    background: #fff;
-    padding: 13px 14px;
-    vertical-align: top;
-    width: 33.33%;
-  }
+/* EMP BAR */
+.emp { background: #1e4a99; color: #fff; padding: 5px 14px; width: 100%; overflow: hidden; }
+.ef  { float: left; padding-right: 18px; }
+.ef:last-child { padding-right: 0; }
+.el  { font-size: 5pt; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: .3px; }
+.ev  { font-size: 7pt; font-weight: bold; margin-top: 1px; }
 
-  .ps-col-title {
-    font-size: 6.5pt;
-    font-weight: bold;
-    letter-spacing: .9px;
-    text-transform: uppercase;
-    color: #1b3f77;
-    border-left: 3px solid #1b3f77;
-    padding-left: 7px;
-    margin-bottom: 11px;
-  }
-  .ps-grp-lbl {
-    font-size: 6.5pt;
-    font-weight: bold;
-    letter-spacing: .4px;
-    text-transform: uppercase;
-    color: #aaa;
-    padding: 8px 0 5px;
-  }
-  .ps-grp-lbl.first { padding-top: 0; }
+/* BODY — pakai table agar 3 kolom sejajar dan tidak overflow */
+.body { background: #edf0f7; padding: 6px; width: 100%; }
+.body-table { width: 100%; border-collapse: separate; border-spacing: 5px 0; table-layout: fixed; }
+.body-table td { background: #fff; padding: 8px 9px; vertical-align: top; width: 33.33%; }
 
-  .ps-items { width: 100%; border-collapse: collapse; }
-  .ps-items td {
-    padding: 3.5px 0;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 8.5pt;
-    vertical-align: middle;
-  }
-  .ps-items tr:last-child td { border-bottom: none; }
-  .ps-items .r { text-align: right; white-space: nowrap; }
-  .ps-items .neg { color: #c0392b; }
+.col-title {
+  font-size: 5.5pt; font-weight: bold; letter-spacing: .9px;
+  text-transform: uppercase; color: #1b3f7e;
+  border-left: 3px solid #1b3f7e; padding-left: 5px; margin-bottom: 7px;
+}
+.grp {
+  font-size: 5pt; font-weight: bold; text-transform: uppercase;
+  letter-spacing: .3px; color: #aaa; padding: 5px 0 3px;
+}
+.grp.first { padding-top: 0; }
 
-  .ps-subtotal { width: 100%; border-collapse: collapse; margin-top: 9px; border-top: 1.5px solid #e0e0e0; }
-  .ps-subtotal td { padding-top: 7px; font-weight: bold; font-size: 9pt; color: #1b3f77; }
-  .ps-subtotal .r { text-align: right; white-space: nowrap; }
+.items { width: 100%; border-collapse: collapse; }
+.items td {
+  font-size: 6.5pt; padding: 2px 0;
+  border-bottom: 1px solid #f3f3f3; vertical-align: middle; line-height: 1.3;
+}
+.items tr:last-child td { border-bottom: none; }
+.r   { text-align: right; white-space: nowrap; }
+.neg { text-align: right; white-space: nowrap; color: #c0392b; }
 
-  /* ── FOOTER ───────────────────────────────────────── */
-  .ps-footer {
-    background-color: #1b3f77;
-    color: #fff;
-    padding: 14px 22px;
-  }
-  .ps-footer table { width: 100%; border-collapse: collapse; }
-  .ps-footer td { vertical-align: middle; padding: 0; }
-  .thp-lbl    { font-size: 7.5pt; color: rgba(255,255,255,.65); text-transform: uppercase; letter-spacing: .8px; }
-  .thp-amount { font-size: 18pt; font-weight: bold; text-align: right; }
-  .paid-badge {
-    background: #27ae60;
-    color: #fff;
-    font-size: 7pt;
-    font-weight: bold;
-    padding: 3px 9px;
-    border-radius: 9px;
-    margin-left: 10px;
-    letter-spacing: .3px;
-    vertical-align: middle;
-  }
+.subtotal { width: 100%; border-top: 1.5px solid #ddd; margin-top: 5px; padding-top: 4px; overflow: hidden; }
+.sl { float: left;  font-size: 6.5pt; font-weight: bold; color: #1b3f7e; }
+.sr { float: right; font-size: 6.5pt; font-weight: bold; color: #1b3f7e; white-space: nowrap; }
 
-  .ps-footnote {
-    background-color: #eef1f6;
-    text-align: center;
-    font-size: 7pt;
-    color: #aaa;
-    padding: 8px 22px;
-  }
+/* FOOTER */
+.ftr { background: #1b3f7e; color: #fff; padding: 8px 14px; width: 100%; overflow: hidden; }
+.ftr-l { float: left; padding-top: 4px; }
+.ftr-r { float: right; }
+.thp-lbl { font-size: 5.5pt; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: .7px; }
+.thp-amt { font-size: 15pt; font-weight: bold; }
+.badge {
+  display: inline-block; background: #27ae60; color: #fff;
+  font-size: 5.5pt; font-weight: bold; padding: 2px 7px;
+  border-radius: 7px; margin-left: 6px; vertical-align: middle;
+}
+.note { background: #edf0f7; text-align: center; font-size: 5pt; color: #bbb; padding: 3px 14px; }
 </style>
 
-<div class="ps-wrap">
+<div class="wrap">
 
-  <!-- ── HEADER ───────────────────────────────────────── -->
-  <div class="ps-header">
-    <table><tbody><tr>
-      <td>
-        <div class="ps-co-name">{{ doc.company }}</div>
-        <div class="ps-co-sub">{{ doc.company }} &middot; Payroll Division</div>
-      </td>
-      <td style="text-align:right;">
-        <div class="ps-period-lbl">Payslip &middot; {{ period_range }}</div>
-        <div class="ps-period-month">{{ period_month }}</div>
-      </td>
-    </tr></tbody></table>
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-l">
+      <div class="co-name">{{ doc.company }}</div>
+      <div class="co-sub">imogi.id &middot; Payroll Division</div>
+    </div>
+    <div class="hdr-r">
+      <div class="per-lbl">Payslip &middot; Period {{ period_range }}</div>
+      <div class="per-mon">{{ period_month }}</div>
+    </div>
   </div>
 
-  <!-- ── EMPLOYEE INFO BAR ─────────────────────────────── -->
-  <div class="ps-emp-bar">
-    <table><tbody><tr>
-      <td>
-        <div class="ef-lbl">Employee</div>
-        <div class="ef-val">{{ doc.employee_name or doc.employee }}</div>
-      </td>
-      <td>
-        <div class="ef-lbl">Department</div>
-        <div class="ef-val">{{ doc.department or "&mdash;" }}</div>
-      </td>
-      <td>
-        <div class="ef-lbl">Employee ID</div>
-        <div class="ef-val">{{ doc.employee }}</div>
-      </td>
-      <td>
-        <div class="ef-lbl">Position</div>
-        <div class="ef-val">{{ doc.designation or "&mdash;" }}</div>
-      </td>
-      <td>
-        <div class="ef-lbl">Bank Account</div>
-        <div class="ef-val">
-          {%- if employee_doc.bank_name or employee_doc.bank_ac_no -%}
-            {{ employee_doc.bank_name or "" }}{% if employee_doc.bank_name and employee_doc.bank_ac_no %} &middot; {% endif %}{{ employee_doc.bank_ac_no or "" }}
-          {%- else -%}&mdash;{%- endif -%}
-        </div>
-      </td>
-    </tr></tbody></table>
+  <!-- EMPLOYEE BAR -->
+  <div class="emp">
+    <div class="ef"><div class="el">Employee</div><div class="ev">{{ doc.employee_name or doc.employee }}</div></div>
+    <div class="ef"><div class="el">Department</div><div class="ev">{{ doc.department or "&mdash;" }}</div></div>
+    <div class="ef"><div class="el">Employee ID</div><div class="ev">{{ doc.employee }}</div></div>
+    <div class="ef"><div class="el">Position</div><div class="ev">{{ doc.designation or "&mdash;" }}</div></div>
+    <div class="ef">
+      <div class="el">Bank Account</div>
+      <div class="ev">
+        {%- if employee_doc.bank_name or employee_doc.bank_ac_no -%}
+          {{ employee_doc.bank_name or "" }}{% if employee_doc.bank_name and employee_doc.bank_ac_no %} &middot; {% endif %}{{ employee_doc.bank_ac_no or "" }}
+        {%- else -%}&mdash;{%- endif -%}
+      </div>
+    </div>
   </div>
 
-  <!-- ── BODY: 3 COLUMNS ───────────────────────────────── -->
-  <div class="ps-body">
-    <table><tbody><tr>
+  <!-- BODY: 3 KOLOM SEJAJAR -->
+  <div class="body">
+    <table class="body-table"><tbody><tr>
 
-      <!-- EARNINGS -->
+      <!-- COL 1: EARNINGS -->
       <td>
-        <div class="ps-col-title">Earnings</div>
-        <table class="ps-items"><tbody>
-          {%- set has_earn = [] -%}
-          {% for row in doc.earnings %}
-            {%- set cu = row.salary_component | upper -%}
-            {% if not row.statistical_component and not row.do_not_include_in_total and "EMPLOYER" not in cu %}
-              {%- set _ = has_earn.append(1) -%}
-              <tr>
-                <td>{{ row.salary_component }}</td>
-                <td class="r">{{ frappe.format(row.amount, {'fieldtype':'Currency'}) }}</td>
-              </tr>
-            {% endif %}
-          {% endfor %}
-          {% if not has_earn %}
-            <tr><td colspan="2" style="color:#ccc;">—</td></tr>
-          {% endif %}
-        </tbody></table>
-        <table class="ps-subtotal"><tbody><tr>
-          <td>Total Earnings</td>
-          <td class="r">{{ frappe.format(doc.gross_pay, {'fieldtype':'Currency'}) }}</td>
-        </tr></tbody></table>
-      </td>
-
-      <!-- DEDUCTIONS -->
-      <td>
-        <div class="ps-col-title">Deductions</div>
-
-        {% if statutory_ded %}
-          <div class="ps-grp-lbl first">Statutory &mdash; Employee</div>
-          <table class="ps-items"><tbody>
-            {% for row in statutory_ded %}
-            <tr>
-              <td>{{ row.salary_component }}</td>
-              <td class="r neg">&ndash; {{ frappe.format(row.amount, {'fieldtype':'Currency'}) }}</td>
-            </tr>
-            {% endfor %}
-          </tbody></table>
-        {% endif %}
-
-        {% if other_ded %}
-          <div class="ps-grp-lbl{% if not statutory_ded %} first{% endif %}">Other</div>
-          <table class="ps-items"><tbody>
-            {% for row in other_ded %}
-            <tr>
-              <td>{{ row.salary_component }}</td>
-              <td class="r neg">&ndash; {{ frappe.format(row.amount, {'fieldtype':'Currency'}) }}</td>
-            </tr>
-            {% endfor %}
-          </tbody></table>
-        {% endif %}
-
-        {% if not statutory_ded and not other_ded %}
-          <div style="color:#ccc;font-size:8pt;">—</div>
-        {% endif %}
-
-        <table class="ps-subtotal"><tbody><tr>
-          <td>Total Deductions</td>
-          <td class="r">&ndash; {{ frappe.format(doc.total_deduction, {'fieldtype':'Currency'}) }}</td>
-        </tr></tbody></table>
-      </td>
-
-      <!-- EMPLOYER CONTRIBUTION -->
-      <td>
-        <div class="ps-col-title">Employer Contribution</div>
-        {% if employer_list %}
-          <table class="ps-items"><tbody>
-            {% for row in employer_list %}
+        <div class="col-title">Earnings</div>
+        <table class="items"><tbody>
+          {%- if normal_earn -%}
+            {%- for row in normal_earn -%}
             <tr>
               <td>{{ row.salary_component }}</td>
               <td class="r">{{ frappe.format(row.amount, {'fieldtype':'Currency'}) }}</td>
             </tr>
-            {% endfor %}
-          </tbody></table>
-          <table class="ps-subtotal"><tbody><tr>
-            <td>Total Contribution</td>
-            <td class="r">{{ frappe.format(ns.emp_total, {'fieldtype':'Currency'}) }}</td>
-          </tr></tbody></table>
-        {% else %}
-          <div style="color:#ccc;font-size:8pt;">—</div>
-        {% endif %}
+            {%- endfor -%}
+          {%- else -%}
+            <tr><td colspan="2" style="color:#ccc;">—</td></tr>
+          {%- endif -%}
+        </tbody></table>
+        <div class="subtotal">
+          <span class="sl">Total Earnings</span>
+          <span class="sr">{{ frappe.format(ns.earn_total, {'fieldtype':'Currency'}) }}</span>
+        </div>
       </td>
 
-    </tr></tbody></table>
-  </div>
-
-  <!-- ── FOOTER ────────────────────────────────────────── -->
-  <div class="ps-footer">
-    <table><tbody><tr>
-      <td><div class="thp-lbl">Net Take-Home Pay</div></td>
+      <!-- COL 2: DEDUCTIONS -->
       <td>
-        <span class="thp-amount">{{ frappe.format(doc.net_pay, {'fieldtype':'Currency'}) }}</span>
-        <span class="paid-badge">Paid</span>
+        <div class="col-title">Deductions</div>
+        {%- if statutory_ded -%}
+          <div class="grp first">Statutory &mdash; Employee</div>
+          <table class="items"><tbody>
+            {%- for row in statutory_ded -%}
+            <tr>
+              <td>{{ row.salary_component }}</td>
+              <td class="neg">&ndash; {{ frappe.format(row.amount, {'fieldtype':'Currency'}) }}</td>
+            </tr>
+            {%- endfor -%}
+          </tbody></table>
+        {%- endif -%}
+        {%- if other_ded -%}
+          <div class="grp{% if not statutory_ded %} first{% endif %}">Other</div>
+          <table class="items"><tbody>
+            {%- for row in other_ded -%}
+            <tr>
+              <td>{{ row.salary_component }}</td>
+              <td class="neg">&ndash; {{ frappe.format(row.amount, {'fieldtype':'Currency'}) }}</td>
+            </tr>
+            {%- endfor -%}
+          </tbody></table>
+        {%- endif -%}
+        {%- if not statutory_ded and not other_ded -%}
+          <div style="color:#ccc;">—</div>
+        {%- endif -%}
+        <div class="subtotal">
+          <span class="sl">Total Deductions</span>
+          <span class="sr">&ndash; {{ frappe.format(doc.total_deduction, {'fieldtype':'Currency'}) }}</span>
+        </div>
       </td>
+
+      <!-- COL 3: EMPLOYER CONTRIBUTION -->
+      <td>
+        <div class="col-title">Employer Contribution</div>
+        {%- if employer_list -%}
+          <table class="items"><tbody>
+            {%- for row in employer_list -%}
+            <tr>
+              <td>{{ row.salary_component }}</td>
+              <td class="r">{{ frappe.format(row.amount, {'fieldtype':'Currency'}) }}</td>
+            </tr>
+            {%- endfor -%}
+          </tbody></table>
+          <div class="subtotal">
+            <span class="sl">Total Contribution</span>
+            <span class="sr">{{ frappe.format(ns.emp_total, {'fieldtype':'Currency'}) }}</span>
+          </div>
+        {%- else -%}
+          <div style="color:#ccc;">—</div>
+        {%- endif -%}
+      </td>
+
     </tr></tbody></table>
   </div>
 
-  <div class="ps-footnote">
-    Generated automatically &middot; Computer-generated document, valid without signature.
+  <!-- FOOTER -->
+  <div class="ftr">
+    <div class="ftr-l"><div class="thp-lbl">Net Take-Home Pay</div></div>
+    <div class="ftr-r">
+      <span class="thp-amt">{{ frappe.format(doc.net_pay, {'fieldtype':'Currency'}) }}</span>
+      <span class="badge">Paid</span>
+    </div>
   </div>
+
+  <div class="note">Generated automatically &middot; Computer-generated document, valid without signature.</div>
 
 </div>

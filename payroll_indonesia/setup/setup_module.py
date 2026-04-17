@@ -224,3 +224,19 @@ def after_sync() -> None:
         )
         frappe.db.rollback()
         raise
+
+def setup_payroll_settings():
+    """Configure Payroll Settings untuk Indonesia"""
+    
+    payroll_settings = frappe.get_single("Payroll Settings")
+    
+    # Set ke Attendance-based
+    payroll_settings.payroll_based_on = "Attendance"
+    payroll_settings.consider_unmarked_attendance_as = "Present"
+    payroll_settings.include_holidays_in_total_working_days = 0
+    payroll_settings.consider_marked_attendance_on_holidays = 0
+    
+    payroll_settings.save(ignore_permissions=True)
+    frappe.db.commit()
+    
+    print("✓ Payroll Settings configured: Attendance-based calculation")

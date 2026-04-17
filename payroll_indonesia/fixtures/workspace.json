@@ -6,7 +6,7 @@
   "icon": "income",
   "module": "Payroll Indonesia",
   "content_type": "Blocks",
-  "content": "[{\"id\":\"hdr1\",\"type\":\"header\",\"data\":{\"text\":\"Payroll Indonesia\",\"col\":12}},{\"id\":\"s1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Employee\",\"col\":3}},{\"id\":\"s2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Structure\",\"col\":3}},{\"id\":\"s3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Structure Assignment\",\"col\":3}},{\"id\":\"s4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Component\",\"col\":3}},{\"id\":\"s5\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Slip\",\"col\":3}},{\"id\":\"s6\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payroll Entry\",\"col\":3}},{\"id\":\"s7\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Register\",\"col\":3}},{\"id\":\"s8\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Annual Payroll History\",\"col\":3}},{\"id\":\"spacer1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"dev1\",\"type\":\"text\",\"data\":{\"text\":\"Developed By IMOGI - PT. Inovasi Terbaik Bangsa\",\"col\":12}}]",
+  "content": "[{\"id\":\"hdr1\",\"type\":\"header\",\"data\":{\"text\":\"Payroll Indonesia\",\"col\":12}},{\"id\":\"s1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Employee\",\"col\":3}},{\"id\":\"s2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Structure\",\"col\":3}},{\"id\":\"s3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Structure Assignment\",\"col\":3}},{\"id\":\"s4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Component\",\"col\":3}},{\"id\":\"s5\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Slip\",\"col\":3}},{\"id\":\"s6\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payroll Entry\",\"col\":3}},{\"id\":\"s7\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Salary Register\",\"col\":3}},{\"id\":\"s8\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Annual Payroll History\",\"col\":3}},{\"id\":\"s9\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Employee Check-in\",\"col\":3}},{\"id\":\"s10\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Attendance\",\"col\":3}},{\"id\":\"s11\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payroll Period\",\"col\":3}},{\"id\":\"spacer1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"dev1\",\"type\":\"text\",\"data\":{\"text\":\"Developed By IMOGI - PT. Inovasi Terbaik Bangsa\",\"col\":12}}]",
   "public": 1,
   "sequence_id": 10,
   "is_hidden": 0,
@@ -52,6 +52,21 @@
     {
       "label": "Annual Payroll History",
       "link_to": "Annual Payroll History",
+      "type": "DocType"
+    },
+    {
+      "label": "Employee Check-in",
+      "link_to": "Employee Checkin",
+      "type": "DocType"
+    },
+    {
+      "label": "Attendance",
+      "link_to": "Attendance",
+      "type": "DocType"
+    },
+    {
+      "label": "Payroll Period",
+      "link_to": "Payroll Period",
       "type": "DocType"
     }
   ],
