@@ -1,4 +1,6 @@
 {%- set employee_doc = frappe.get_doc("Employee", doc.employee) -%}
+{%- set pis_settings = frappe.get_cached_doc("Payroll Indonesia Settings", "Payroll Indonesia Settings")
+    if frappe.db.exists("Payroll Indonesia Settings", "Payroll Indonesia Settings") else None -%}
 {%- set month_names = ["January","February","March","April","May","June","July","August","September","October","November","December"] -%}
 {%- if doc.end_date -%}
   {%- set sd = doc.start_date|string -%}
@@ -251,12 +253,48 @@
   vertical-align: middle;
 }
 
-.note { 
-  background: #edf0f7; 
-  text-align: center; 
+.note {
+  background: #edf0f7;
+  text-align: center;
   font-size: 6pt; /* DINAIKKAN dari 5pt */
   color: #999; /* LEBIH GELAP dari #bbb */
-  padding: 4px 14px; 
+  padding: 4px 14px;
+}
+
+/* SIGNATURE BLOCK */
+.sig-wrap {
+  background: #fff;
+  padding: 16px 14px 8px 14px;
+  border-top: 3px solid #edf0f7;
+}
+.sig-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.sig-table td {
+  width: 33.33%;
+  text-align: center;
+  vertical-align: top;
+  padding: 0 8px;
+}
+.sig-place {
+  font-size: 6.5pt;
+  color: #999;
+  margin-bottom: 26px;
+}
+.sig-line {
+  border-top: 1px solid #333;
+  margin: 0 6px;
+  padding-top: 4px;
+}
+.sig-name {
+  font-size: 7.5pt;
+  font-weight: bold;
+  color: #1b3f7e;
+}
+.sig-role {
+  font-size: 6.5pt;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+  margin-top: 1px;
 }
 </style>
 
@@ -391,6 +429,33 @@
 
   </div>
 
-  <div class="note">Generated automatically &middot; Computer-generated document, valid without signature.</div>
+  <!-- SIGNATURE BLOCK -->
+  <div class="sig-wrap">
+    <table class="sig-table"><tbody><tr>
+      <td>
+        <div class="sig-place">&nbsp;</div>
+        <div class="sig-line">
+          <div class="sig-name">{{ (pis_settings.director_name if pis_settings else "") or "&mdash;" }}</div>
+          <div class="sig-role">{{ (pis_settings.director_designation if pis_settings else "") or "Direktur" }}</div>
+        </div>
+      </td>
+      <td>
+        <div class="sig-place">&nbsp;</div>
+        <div class="sig-line">
+          <div class="sig-name">{{ (pis_settings.operation_head_name if pis_settings else "") or "&mdash;" }}</div>
+          <div class="sig-role">{{ (pis_settings.operation_head_designation if pis_settings else "") or "Operation Head" }}</div>
+        </div>
+      </td>
+      <td>
+        <div class="sig-place">&nbsp;</div>
+        <div class="sig-line">
+          <div class="sig-name">{{ doc.employee_name or doc.employee }}</div>
+          <div class="sig-role">Karyawan</div>
+        </div>
+      </td>
+    </tr></tbody></table>
+  </div>
+
+  <div class="note">Generated automatically &middot; imogi.id Payroll Division</div>
 
 </div>

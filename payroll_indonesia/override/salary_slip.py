@@ -25,7 +25,7 @@ except ImportError:
 import json
 import traceback
 import frappe
-from frappe.utils import flt
+from frappe.utils import flt, rounded
 try:
     from frappe.utils import getdate
 except Exception:  # pragma: no cover
@@ -904,18 +904,36 @@ def strip_bpjs_hook(doc, method=None):
                 changed = True
 
         if changed:
-            # Recalculate totals setelah zero-out
+            # Recalculate totals setelah zero-out, mirroring HRMS's own
+            # calculate_net_pay()/set_net_pay() field-by-field so every
+            # derived total (base_* and rounded_total) stays consistent -
+            # not just net_pay/total_deduction.
             doc.gross_pay = sum(
                 (r.get("amount", 0) if isinstance(r, dict) else getattr(r, "amount", 0))
                 for r in (doc.earnings or [])
                 if not (r.get("do_not_include_in_total") if isinstance(r, dict) else getattr(r, "do_not_include_in_total", 0))
+            )
+            doc.base_gross_pay = flt(
+                flt(doc.gross_pay) * flt(doc.exchange_rate), doc.precision("base_gross_pay")
             )
             doc.total_deduction = sum(
                 (r.get("amount", 0) if isinstance(r, dict) else getattr(r, "amount", 0))
                 for r in (doc.deductions or [])
                 if not (r.get("do_not_include_in_total") if isinstance(r, dict) else getattr(r, "do_not_include_in_total", 0))
             )
-            doc.net_pay = doc.gross_pay - doc.total_deduction
+            doc.base_total_deduction = flt(
+                flt(doc.total_deduction) * flt(doc.exchange_rate), doc.precision("base_total_deduction")
+            )
+            doc.net_pay = flt(doc.gross_pay) - (
+                flt(doc.total_deduction) + flt(doc.get("total_loan_repayment"))
+            )
+            doc.rounded_total = rounded(doc.net_pay)
+            doc.base_net_pay = flt(
+                flt(doc.net_pay) * flt(doc.exchange_rate), doc.precision("base_net_pay")
+            )
+            doc.base_rounded_total = flt(
+                rounded(doc.base_net_pay), doc.precision("base_net_pay")
+            )
 
     except Exception as e:
         frappe.log_error(

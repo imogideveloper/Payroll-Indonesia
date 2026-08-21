@@ -140,6 +140,26 @@ doc_events = {
     },
     "Salary Slip": {
         "validate": "payroll_indonesia.override.salary_slip.strip_bpjs_hook",
+        # Other apps' "validate" doc_events (e.g. imogi_finance's
+        # validate_pph21_exemption) run AFTER this one and call
+        # doc.calculate_net_pay(), which re-derives every deduction
+        # amount from its salary component formula - silently undoing
+        # the zero-out above. before_save/before_submit run strictly
+        # after ALL "validate" hooks from every app (see document.py's
+        # run_before_save_methods), so re-running the strip there
+        # guarantees it is the last mutation before the amounts are
+        # persisted, regardless of what any other app's validate hook
+        # does in between.
+        "before_save": "payroll_indonesia.override.salary_slip.strip_bpjs_hook",
+        "before_submit": "payroll_indonesia.override.salary_slip.strip_bpjs_hook",
+        # Frappe only runs "validate"/"before_save"/"before_submit" for
+        # action="save"/"submit" - editing an already-Submitted doc
+        # (allow_on_submit fields) takes the "update_after_submit"
+        # action instead, which only fires before_update_after_submit.
+        # Without this, exemption flags toggled after a slip is already
+        # submitted would never re-trigger the strip. Explicit user
+        # request (2026-08-19).
+        "before_update_after_submit": "payroll_indonesia.override.salary_slip.strip_bpjs_hook",
         "on_submit": "payroll_indonesia.override.salary_slip.on_submit",
         "on_cancel": "payroll_indonesia.override.salary_slip.on_cancel",
     },

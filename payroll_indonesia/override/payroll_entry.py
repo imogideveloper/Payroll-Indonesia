@@ -15,7 +15,7 @@ except ImportError:
 import frappe
 import traceback
 from typing import Callable, Dict, List, Any, Optional, Tuple
-from payroll_indonesia.override.salary_slip import CustomSalarySlip
+from payroll_indonesia.override.salary_slip import CustomSalarySlip, strip_bpjs_hook
 from payroll_indonesia.config import get_value
 from payroll_indonesia.utils.sync_annual_payroll_history import sync_annual_payroll_history
 from frappe.utils import flt
@@ -236,6 +236,11 @@ class CustomPayrollEntry(PayrollEntry):
                     continue
 
                 try:
+                    # Defensive re-strip right before submit - see the
+                    # matching comment in _process_salary_slips for why
+                    # relying on the "validate" doc_event alone isn't
+                    # reliable here.
+                    strip_bpjs_hook(slip)
                     slip.submit()
                     submitted.append(slip)
                     logger.info(f"Auto-submitted salary slip: {name}")
@@ -319,7 +324,22 @@ class CustomPayrollEntry(PayrollEntry):
             try:
                 # Apply the provided tax calculation function
                 tax_calculator(slip_obj)
-                
+
+                # tax_calculator (calculate_income_tax -> update_pph21_row ->
+                # _recalculate_totals) calls calculate_net_pay() directly,
+                # OUTSIDE the validate() lifecycle - that rebuilds
+                # earnings/deductions straight from the Salary Structure
+                # formulas, silently undoing any BPJS exemption stripping
+                # strip_bpjs_hook already applied during the slip's initial
+                # insert(). Calling it again here, explicitly, right before
+                # the save decision below, is what actually makes exemption
+                # flags (Employee.bebas_bpjs_*) stick - relying solely on
+                # the "validate" doc_event isn't enough once this out-of-
+                # cycle recalculation has run. Explicit user request
+                # (2026-08-19) after tracing a real slip where BPJS
+                # deductions kept reappearing despite exemptions being set.
+                strip_bpjs_hook(slip_obj)
+
                 # Check if only light fields were modified
                 only_light_fields_changed = True
                 changed_fields = []

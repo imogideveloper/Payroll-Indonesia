@@ -262,6 +262,32 @@
       "fieldtype": "Data",
       "label": "Authorized Signatory Designation",
       "description": "Jabatan penandatangan slip gaji (default: Human Resources)"
+    },
+    {
+      "fieldname": "director_name",
+      "fieldtype": "Data",
+      "label": "Director Name",
+      "description": "Nama Direktur untuk kolom tanda tangan slip gaji"
+    },
+    {
+      "fieldname": "director_designation",
+      "fieldtype": "Data",
+      "label": "Director Designation",
+      "default": "Direktur",
+      "description": "Jabatan penandatangan (default: Direktur)"
+    },
+    {
+      "fieldname": "operation_head_name",
+      "fieldtype": "Data",
+      "label": "Operation Head Name",
+      "description": "Nama Operation Head untuk kolom tanda tangan slip gaji"
+    },
+    {
+      "fieldname": "operation_head_designation",
+      "fieldtype": "Data",
+      "label": "Operation Head Designation",
+      "default": "Operation Head",
+      "description": "Jabatan penandatangan (default: Operation Head)"
     }
   ],
   "permissions": [
