@@ -79,19 +79,20 @@ def assign_gl_accounts_to_salary_components(company: str, company_abbr: str) -> 
                     break
             
             if existing_mapping:
-                # Update if account is different
-                if existing_mapping.account != full_acc:
-                    frappe.logger().info(
-                        f"Updating account for '{component_name}' in company '{company}' "
-                        f"from '{existing_mapping.account}' to '{full_acc}'"
-                    )
-                    existing_mapping.account = full_acc
-                    sc_doc.save()
-                else:
-                    frappe.logger().info(
-                        f"Salary component '{component_name}' already mapped to '{full_acc}' "
-                        f"for company '{company}'. Skipping."
-                    )
+                # Never overwrite an existing mapping, even if it disagrees
+                # with gl_account_mapping.json - this runs on every single
+                # `bench migrate` (after_sync, called from every deploy),
+                # so "update if different" meant any account someone
+                # corrected by hand in the UI silently reverted back to
+                # this static file on the next deploy. Reported directly
+                # by the user ("setiap kali di deploy dia berubah lagi").
+                # The JSON is only ever a *default* for a mapping that
+                # doesn't exist yet, never a source of truth to re-assert.
+                frappe.logger().info(
+                    f"Salary component '{component_name}' already mapped to "
+                    f"'{existing_mapping.account}' for company '{company}'. "
+                    f"Leaving as-is (not overwriting with '{full_acc}')."
+                )
             else:
                 # Create new mapping
                 try:
