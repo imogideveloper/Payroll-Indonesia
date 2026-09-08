@@ -15,28 +15,36 @@ Entry di ACCOUNT_MAPPING boleh berupa:
 import frappe
 
 
+_PEMUDA_PATRIOT_MAPPING = {
+    "Gaji Pokok": ("6211001", "SALARIES"),
+    "Basic Salary": ("6211001", "SALARIES"),
+    "Tunjangan Transport": ("6211005", "TRANSPORTATION"),
+    "Tunjangan Operational": ("6211004", "OPERATIONAL"),
+    "Tunjangan Makan": ("6211007", "MEAL"),
+    "Tunjangan Pajak atas Insentif": ("6211002", "ALLOWANCE"),
+    "Insentif Penjualan": ("6211015", "INCENTIVE"),
+    "Kendaraan Dinas": ("6211023", "LAIN LAIN"),
+    "Asuransi Tambahan": ("6211010", "LIFE INSURANCE"),
+    "Bingkisan Hari Raya": ("6211018", "T.H.R & BONUS"),
+    "Seragam Kerja": ("6241001", "UNIFORM"),
+    "Makan di Kantor": ("6221002", "CAFETARIA"),
+    "Bonus": ("6211017", "BONUS"),
+    "THR": ("6211018", "T.H.R & BONUS"),
+}
+
 ACCOUNT_MAPPING = {
     "Tiga Perkasa Teknik": {
         "BPJS Kesehatan Employee": "2131011 - Accrued Expense Health Insurance/BPJS - TPT",
         "BPJS JHT Employee": "2131014 - Accrued Payable BPJS JHT - TPT",
         "BPJS JP Employee": "2131015 - Accrued Payable BPJS JP - TPT",
     },
-    "Pemuda Patriot R": {
-        "Gaji Pokok": ("6211001", "SALARIES"),
-        "Basic Salary": ("6211001", "SALARIES"),
-        "Tunjangan Transport": ("6211005", "TRANSPORTATION"),
-        "Tunjangan Operational": ("6211004", "OPERATIONAL"),
-        "Tunjangan Makan": ("6211007", "MEAL"),
-        "Tunjangan Pajak atas Insentif": ("6211002", "ALLOWANCE"),
-        "Insentif Penjualan": ("6211015", "INCENTIVE"),
-        "Kendaraan Dinas": ("6211023", "LAIN LAIN"),
-        "Asuransi Tambahan": ("6211010", "LIFE INSURANCE"),
-        "Bingkisan Hari Raya": ("6211018", "T.H.R & BONUS"),
-        "Seragam Kerja": ("6241001", "UNIFORM"),
-        "Makan di Kantor": ("6221002", "CAFETARIA"),
-        "Bonus": ("6211017", "BONUS"),
-        "THR": ("6211018", "T.H.R & BONUS"),
-    },
+    # Same company, two names seen across environments: "Pemuda Patriot R" on
+    # the local/dev site's Company record, "Pemuda Patriot Rentalindo" (the
+    # full name) on production. Map both so this works regardless of which
+    # one a given site actually uses — sync_salary_component_accounts()
+    # already skips whichever Company name doesn't exist on a given site.
+    "Pemuda Patriot R": _PEMUDA_PATRIOT_MAPPING,
+    "Pemuda Patriot Rentalindo": _PEMUDA_PATRIOT_MAPPING,
 }
 
 
