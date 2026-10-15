@@ -12,13 +12,13 @@ version = "1.0.0"
 dependencies = [
     "frappe>=15.0.0",
     "erpnext>=15.0.0",
-    # PyPika/gunicorn used to be pinned here to specific frappe/* fork
-    # commits, which pinned them to an OLDER pypika than frappe 15.122.0
-    # itself now requires — uv's resolver refuses to install two
-    # different commits of the same package, failing the whole build
-    # ("Requirements contain conflicting URLs for package `pypika`").
-    # Frappe already depends on (and installs) both, so there's nothing
-    # to pin here.
+    # Leaving pypika unpinned (previous fix) traded one conflict for
+    # another: uv then couldn't tell which of two implicit resolutions to
+    # use and failed with "conflicting URLs for package `pypika`" instead.
+    # uv's own error names the exact commit frappe 15.123.0 now needs —
+    # pin to that one explicitly so there is only one answer. Update this
+    # if frappe's own pypika pin moves again.
+    "PyPika @ git+https://github.com/frappe/pypika@7ef6e40215d46cd531e8c4e58650b84c11abbd04",
 ]
 
 [project.optional-dependencies]
